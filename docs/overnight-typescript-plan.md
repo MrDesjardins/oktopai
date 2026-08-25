@@ -47,3 +47,24 @@ The 150/300+ tok/s target is a serving target. Transformers + PEFT numbers are d
 - If speed exceeds 300 tok/s but quality fails: do not promote the artifact.
 
 The controller is `scripts/run_overnight_typescript.py`. It is resumable and records stage boundaries in `experiments/runs.jsonl`.
+
+## Extended unattended queue
+
+After the initial 2,500-step run, `scripts/run_autonomous_typescript.py` provides
+the next longer controlled experiment. Its default queue creates 50,000
+deterministic records across the existing ten TypeScript families, trains a
+5,000-step CUDA LoRA candidate, and evaluates it against 100 held-out tasks
+with independent base and adapter model instances. The generated data remains
+synthetic and compiler-verified; it is a coverage experiment, not evidence of
+human-quality training data. The queue records all stages and is safe to
+resume because completed artifacts are skipped.
+
+Run it with:
+
+```bash
+HF_HOME=.oktopai/hf-cache .venv-training/bin/python scripts/run_autonomous_typescript.py
+```
+
+This queue deliberately does not auto-promote, upload, or claim a speed target.
+GGUF export remains a separate step because the local llama.cpp checkout must
+contain a quantizer before an artifact can be served by Ollama.

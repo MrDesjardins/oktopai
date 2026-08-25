@@ -114,3 +114,21 @@ Last updated after the first live local-model experiments.
   unified chat-template evaluator. A 2,000-step multi-epoch run is currently
   in progress to test whether the issue is undertraining rather than data
   coverage.
+
+## Latest overnight follow-up (2026-08-25)
+
+- The overnight 2,500-step CUDA SFT completed and produced
+  `.oktopai/adapters/typescript-overnight-sft`. Its first 200-task report was
+  not a valid base-versus-adapter comparison because both labels shared one
+  mutable base model instance.
+- `scripts/evaluate_adapter.py` now loads independent base and adapter-base
+  instances. A corrected 20-task CUDA check produced different outputs on all
+  20 tasks; the adapter is therefore not silently identical to the base. The
+  20-task result is diagnostic only and is not a promotion gate.
+- Added `scripts/run_autonomous_typescript.py`, an unattended queue that can
+  generate 50,000 compiler-verified synthetic coverage records, train a
+  5,000-step CUDA candidate, evaluate it independently, and append every stage
+  to the experiment ledger. It is designed to run locally without cloud APIs.
+- The 200-task independent evaluation should be rerun before interpreting the
+  overnight quality result. No model is promoted until the disjoint suite,
+  family gates, and Ollama GGUF speed measurements pass.

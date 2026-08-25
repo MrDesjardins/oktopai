@@ -54,8 +54,12 @@ def main() -> int:
         raise SystemExit("--device cuda requested, but CUDA is unavailable")
     device = "cuda" if args.device == "auto" and torch.cuda.is_available() or args.device == "cuda" else "cpu"
     tokenizer = AutoTokenizer.from_pretrained(str(args.base_model), local_files_only=True)
+    # Keep independent model instances. PeftModel wraps and may mutate the
+    # supplied base object; sharing it makes the base-vs-adapter comparison
+    # invalid and can produce identical outputs for both labels.
     base = AutoModelForCausalLM.from_pretrained(str(args.base_model), local_files_only=True).to(device)
-    adapted = PeftModel.from_pretrained(base, str(args.adapter), local_files_only=True)
+    adapter_base = AutoModelForCausalLM.from_pretrained(str(args.base_model), local_files_only=True).to(device)
+    adapted = PeftModel.from_pretrained(adapter_base, str(args.adapter), local_files_only=True)
     records = []
     for task in tasks:
         text = prompt_for(task, tokenizer)
