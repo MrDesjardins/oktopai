@@ -28,8 +28,11 @@ def main() -> int:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--count", type=int, default=3000)
+    parser.add_argument("--split", choices=("any", "train", "validation", "test"), default="any")
     args = parser.parse_args()
     records = [json.loads(line) for line in args.input.read_text(encoding="utf-8").splitlines() if line]
+    if args.split != "any":
+        records = [record for record in records if record.get("split") == args.split]
     tasks: list[dict[str, Any]] = []
     for record in records[: args.count]:
         family = record.get("family", "typescript")
@@ -54,6 +57,7 @@ def main() -> int:
         "name": "oktopai-typescript-generated",
         "description": "Large deterministic TypeScript routing and executable-response benchmark.",
         "source": str(args.input),
+        "source_split": args.split,
         "tasks": tasks,
     }, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(args.output), "tasks": len(tasks)}, indent=2))

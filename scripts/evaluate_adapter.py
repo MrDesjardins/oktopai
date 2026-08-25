@@ -12,8 +12,8 @@ def prompt_for(task: dict) -> str:
     return "\n".join((m["role"] + ": " + m["content"]) for m in task["messages"]) if "messages" in task else task["prompt"]
 
 
-def generate(model, tokenizer, text: str, max_new_tokens: int) -> tuple[str, float, int]:
-    encoded = tokenizer(text, return_tensors="pt")
+def generate(model, tokenizer, text: str, max_new_tokens: int, device: str) -> tuple[str, float, int]:
+    encoded = {key: value.to(device) for key, value in tokenizer(text, return_tensors="pt").items()}
     started = time.perf_counter()
     output = model.generate(**encoded, max_new_tokens=max_new_tokens, do_sample=False)
     elapsed = time.perf_counter() - started
@@ -31,11 +31,13 @@ def main() -> int:
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--shuffle-seed", type=int, default=None)
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
     try:
         from transformers import AutoModelForCausalLM, AutoTokenizer
         from peft import PeftModel
+        import torch
     except ImportError as exc:
         raise SystemExit(f"Training dependencies unavailable: {exc}")
 
@@ -45,14 +47,17 @@ def main() -> int:
     tasks = tasks[args.offset:args.offset + args.max_tasks]
     if not tasks:
         raise SystemExit(f"No tasks found for domain {args.domain}")
+    if args.device == "cuda" and not torch.cuda.is_available():
+        raise SystemExit("--device cuda requested, but CUDA is unavailable")
+    device = "cuda" if args.device == "auto" and torch.cuda.is_available() or args.device == "cuda" else "cpu"
     tokenizer = AutoTokenizer.from_pretrained(str(args.base_model), local_files_only=True)
-    base = AutoModelForCausalLM.from_pretrained(str(args.base_model), local_files_only=True)
+    base = AutoModelForCausalLM.from_pretrained(str(args.base_model), local_files_only=True).to(device)
     adapted = PeftModel.from_pretrained(base, str(args.adapter), local_files_only=True)
     records = []
     for task in tasks:
         text = prompt_for(task) + "\nassistant:"
-        base_output, base_seconds, base_tokens = generate(base, tokenizer, text, args.max_new_tokens)
-        adapter_output, adapter_seconds, adapter_tokens = generate(adapted, tokenizer, text, args.max_new_tokens)
+        base_output, base_seconds, base_tokens = generate(base, tokenizer, text, args.max_new_tokens, device)
+        adapter_output, adapter_seconds, adapter_tokens = generate(adapted, tokenizer, text, args.max_new_tokens, device)
         base_verification = verify_output(base_output, task.get("checks", {}))
         adapter_verification = verify_output(adapter_output, task.get("checks", {}))
         records.append({"task_id": task["id"], "base": {"output": base_output, "seconds": base_seconds, "new_tokens": base_tokens, "tokens_per_second": base_tokens / base_seconds if base_seconds else 0, "verification": base_verification.__dict__}, "adapter": {"output": adapter_output, "seconds": adapter_seconds, "new_tokens": adapter_tokens, "tokens_per_second": adapter_tokens / adapter_seconds if adapter_seconds else 0, "verification": adapter_verification.__dict__}})

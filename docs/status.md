@@ -87,3 +87,13 @@ Last updated after the first live local-model experiments.
 - `train_lora.py` now supports `--device auto|cpu|cuda`, resumable checkpoints
   with `--resume`, and step-based checkpoint retention. CUDA explicitly fails
   with an actionable error when the host does not expose a device.
+- GPU passthrough was verified with local runtime access: WSL exposes
+  `/dev/dxg`, CUDA 13.2, and an NVIDIA GeForce RTX 5080 with 15.92 GiB VRAM;
+  PyTorch reports CUDA available. The v8 1,000-step run completed in 685.4
+  seconds at 1.459 steps/sec with loss 0.2339, versus 0.31 steps/sec for the
+  earlier CPU run.
+- Added 3,000 deterministic preference candidates; 1,785 passed family-level
+  compiler verification and are stored locally for preference-training work.
+  Added a strictly test-split 980-task benchmark. On a randomized 20-task CUDA
+  sample, both base and v8 verified 1/20 with average score 0.208, so v8 is not
+  promoted.

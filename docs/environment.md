@@ -25,3 +25,9 @@ The v7 300-step training run therefore used CPU. The CUDA-enabled wheel is
 already present; enabling GPU training requires fixing host/WSL GPU passthrough
 and NVML visibility, not downloading another model or silently changing
 runtime behavior.
+
+Follow-up verification with local runtime access found the passthrough is
+healthy: `/dev/dxg` and `libcuda.so.1` are present, `nvidia-smi` reports an
+NVIDIA GeForce RTX 5080 with 15.92 GiB VRAM, and PyTorch sees one CUDA device.
+Earlier checks were sandbox-restricted. GPU training is now enabled with
+`scripts/train_lora.py --device cuda`.

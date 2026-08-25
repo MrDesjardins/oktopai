@@ -152,3 +152,8 @@ and adds compiler-backed response checks. A route-only run completed with
 against thousands of tasks are intentionally separate because they consume
 substantial local inference time; use `--limit` first, then run the full suite
 when a long benchmark window is available.
+
+`benchmarks/typescript-heldout-980.json` is the strict test-only suite and
+must remain separate from training records. The first CUDA v8 sample scored
+only 1/20 verified responses for both baseline and adapter, so v8 is not yet
+promoted.
