@@ -35,6 +35,14 @@ seeds.
 
 ## Data plan
 
+The repository-grounded corpus builder is `scripts/build_typescript_usecase_corpus.py`.
+It creates many deterministic task variants from real public TypeScript source,
+with repository commit and source hashes attached. A stronger teacher may answer
+the resulting JSONL offline or through an explicitly approved dataset-generation
+service. The answers must then pass through
+`scripts/ingest_verified_teacher_data.py`, which runs strict TypeScript
+compilation and discards unverified answers before student training.
+
 Raw volume is not enough. The target corpus is:
 
 - 50,000–100,000 programmatic examples covering the skill matrix;
