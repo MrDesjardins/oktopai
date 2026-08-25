@@ -11,13 +11,14 @@ from oktopai.runtimes.base import RuntimeUnavailable
 
 ROOT=Path(__file__).resolve().parents[1]
 def main():
-    parser=argparse.ArgumentParser(); parser.add_argument("--domain",default="typescript"); parser.add_argument("--output",type=Path,default=ROOT/".oktopai/teacher-traces.jsonl"); parser.add_argument("--model"); parser.add_argument("--input",type=Path,default=ROOT/"training/seed_examples.jsonl"); parser.add_argument("--limit",type=int); args=parser.parse_args()
+    parser=argparse.ArgumentParser(); parser.add_argument("--domain",default="typescript"); parser.add_argument("--output",type=Path,default=ROOT/".oktopai/teacher-traces.jsonl"); parser.add_argument("--model"); parser.add_argument("--input",type=Path,default=ROOT/"training/seed_examples.jsonl"); parser.add_argument("--limit",type=int); parser.add_argument("--offset",type=int,default=0); args=parser.parse_args()
     registry=ExpertRegistry.from_toml(ROOT/"config/experts.toml"); expert=registry.get(args.domain if args.domain in registry.experts else "general-coding"); model=args.model or expert.model; runtime=OllamaRuntime(); records=[]
     candidates=[]
     for line in args.input.read_text().splitlines():
         item=json.loads(line)
         if item.get("domain")==args.domain: candidates.append(item)
-    for seed in candidates[:args.limit] if args.limit else candidates:
+    selected=candidates[args.offset:args.offset+args.limit] if args.limit else candidates[args.offset:]
+    for seed in selected:
         user_content = seed.get("messages", [{"content": seed.get("prompt", "")}])[-1]["content"]
         if seed.get("source_code"):
             user_content += "\n\nSource fixture:\n```typescript\n" + seed["source_code"] + "\n```"

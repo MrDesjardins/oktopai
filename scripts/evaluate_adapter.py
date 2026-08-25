@@ -8,8 +8,11 @@ sys.path.insert(0, str(ROOT / "src"))
 from oktopai.benchmarking import verify_output
 
 
-def prompt_for(task: dict) -> str:
-    return "\n".join((m["role"] + ": " + m["content"]) for m in task["messages"]) if "messages" in task else task["prompt"]
+def prompt_for(task: dict, tokenizer) -> str:
+    messages = task.get("messages") or [{"role": "user", "content": task["prompt"]}]
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    return "\n".join((m["role"] + ": " + m["content"]) for m in messages) + "\nassistant:"
 
 
 def generate(model, tokenizer, text: str, max_new_tokens: int, device: str) -> tuple[str, float, int]:
@@ -55,7 +58,7 @@ def main() -> int:
     adapted = PeftModel.from_pretrained(base, str(args.adapter), local_files_only=True)
     records = []
     for task in tasks:
-        text = prompt_for(task) + "\nassistant:"
+        text = prompt_for(task, tokenizer)
         base_output, base_seconds, base_tokens = generate(base, tokenizer, text, args.max_new_tokens, device)
         adapter_output, adapter_seconds, adapter_tokens = generate(adapted, tokenizer, text, args.max_new_tokens, device)
         base_verification = verify_output(base_output, task.get("checks", {}))

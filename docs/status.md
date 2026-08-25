@@ -107,3 +107,10 @@ Last updated after the first live local-model experiments.
   held-out sample verified 6/20 at average score 0.567, so it is not promoted;
   the next comparison must rerun base, SFT, and DPO under one identical batch
   and improve prompt/tokenization consistency.
+- Added 200 more public TypeScript repository teacher traces; 48 passed the
+  local compiler filter. The resulting v8-data corpus contains 10,058 records.
+  A 500-step CUDA SFT run on it completed in 334.5 seconds with loss 0.2975,
+  but its 20-task held-out sample still tied the baseline at 3/20 under the
+  unified chat-template evaluator. A 2,000-step multi-epoch run is currently
+  in progress to test whether the issue is undertraining rather than data
+  coverage.
