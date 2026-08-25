@@ -1,0 +1,10 @@
+# Optional local training stack. Install inside a dedicated virtual environment.
+# Choose the PyTorch wheel appropriate for the machine before installing.
+torch
+transformers
+datasets
+peft
+accelerate
+safetensors
+sentencepiece
+trl

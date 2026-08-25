@@ -1,0 +1,8 @@
+.oktopai/
+__pycache__/
+*.py[cod]
+.venv/
+.venv-training/
+*.egg-info/
+node_modules/
+.next/

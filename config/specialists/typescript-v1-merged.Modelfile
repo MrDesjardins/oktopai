@@ -1,0 +1,5 @@
+# Experimental local import of the merged Qwen2.5-Coder 0.5B checkpoint.
+# The absolute path is intentionally supplied at creation time; update it for
+# another machine. This file is not used by the normal 7B aliases.
+FROM /home/miste/code/oktopai/.oktopai/merged/typescript-v1
+SYSTEM You are oktopai's TypeScript specialist. Prefer type-safe generic APIs, precise compiler fixes, and concise explanations.

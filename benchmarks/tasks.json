@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "name": "oktopai-coding-mvp",
+  "description": "Small local coding tasks for routing, response, and verification experiments.",
+  "tasks": [
+    {
+      "id": "ts-generic-001",
+      "expert": "typescript",
+      "domain": "typescript",
+      "difficulty": "easy",
+      "file_path": "src/example.ts",
+      "file_text": "function getValue<T>(obj: T, key: string) { return obj[key]; }",
+      "prompt": "Fix this TypeScript generic error. Explain the issue briefly and provide corrected code. Do not use any.\n\nfunction getValue<T>(obj: T, key: string) { return obj[key]; }",
+      "checks": {"required": ["keyof", "T[K]"], "forbidden": ["any"], "required_source": ["keyof T", "K extends keyof T"], "mode": "typescript_fixture"},
+      "tags": ["generics", "indexing", "type-safety"]
+    },
+    {
+      "id": "ts-narrowing-001",
+      "expert": "typescript",
+      "domain": "typescript",
+      "difficulty": "medium",
+      "file_path": "src/narrowing.ts",
+      "file_text": "function lengthOf(value: string | string[] | null) { return value.length; }",
+      "prompt": "Make this TypeScript function type-safe without a type assertion. Explain the narrowing strategy.\n\nfunction lengthOf(value: string | string[] | null) { return value.length; }",
+      "checks": {"required_any": ["typeof", "Array.isArray", "if (value", "if(value"], "forbidden": ["as string", "as any"], "required_source": ["string | string[]"], "mode": "typescript_fixture"},
+      "tags": ["narrowing", "unions"]
+    },
+    {
+      "id": "react-render-001",
+      "expert": "react",
+      "domain": "react",
+      "difficulty": "medium",
+      "file_path": "src/List.tsx",
+      "file_text": "import React from 'react'; function List({ items, onSelect }) { return null; }",
+      "prompt": "Explain the unnecessary rerender in this React component and provide a minimal corrected version.\n\nfunction List({ items, onSelect }) { const sorted = items.slice().sort(); return <Items items={sorted} onSelect={(item) => onSelect(item)} />; }",
+      "checks": {"required_any": ["useMemo", "useCallback", "memo", "stable", "reference"], "required_source": ["items", "onSelect"], "mode": "framework_fixture"},
+      "tags": ["rendering", "referential-identity"]
+    },
+    {
+      "id": "next-boundary-001",
+      "expert": "nextjs",
+      "domain": "nextjs",
+      "difficulty": "easy",
+      "file_path": "app/page.tsx",
+      "file_text": "import { useState } from 'react'; export default function Page() { return null; }",
+      "prompt": "Fix this Next.js App Router server/client component issue. Include the smallest corrected file and explain why the directive is needed.\n\nimport { useState } from 'react';\nexport default function Page() { const [open, setOpen] = useState(false); return <button onClick={() => setOpen(!open)}>{String(open)}</button>; }",
+      "checks": {"required": ["use client"], "required_source": ["use client", "useState"], "mode": "framework_fixture"},
+      "tags": ["app-router", "server-client-boundary"]
+    },
+    {
+      "id": "testing-vitest-001",
+      "expert": "testing",
+      "domain": "testing",
+      "difficulty": "easy",
+      "file_path": "src/divide.test.ts",
+      "file_text": "import { describe, expect, it } from 'vitest';",
+      "prompt": "Write a focused Vitest test for this function, including division by zero.\n\nexport function divide(a: number, b: number): number { if (b === 0) throw new Error('division by zero'); return a / b; }",
+      "checks": {"required": ["describe", "expect", "division by zero"], "required_any": ["toThrow", "toThrowError"], "required_source": ["describe", "expect"], "mode": "test_fixture"},
+      "tags": ["vitest", "edge-case"]
+    },
+    {
+      "id": "sql-null-001",
+      "expert": "general-coding",
+      "domain": "sql",
+      "difficulty": "medium",
+      "file_path": "queries/customers.sql",
+      "file_text": "-- customer/order query",
+      "prompt": "Return only SQL in a sql code fence. Write a query that returns every customer with no orders, including customers whose id is 0. Explain the NULL semantics in a SQL comment.\n\ncustomers(id, name)\norders(id, customer_id)",
+      "checks": {"required_any": ["LEFT JOIN", "left join"], "required": ["IS NULL"], "forbidden": ["NOT IN"], "expected_rows": [[0, "Zero"], [2, "Grace"]], "mode": "sql_fixture"},
+      "tags": ["joins", "null-semantics"]
+    },
+    {
+      "id": "python-compile-001",
+      "expert": "general-coding",
+      "domain": "python",
+      "difficulty": "easy",
+      "file_path": "src/math.py",
+      "file_text": "def average(values): return sum(values) / len(values) if values else 0",
+      "prompt": "Return a corrected Python implementation of this function. Include only the function in a Python code fence.\n\ndef average(values):\n    return sum(values) / len(values) if values else 0",
+      "checks": {"required": ["def average", "return"], "mode": "python_compile", "language": "python"},
+      "tags": ["python", "executable-check"]
+    },
+    {
+      "id": "general-refactor-001",
+      "expert": "general-coding",
+      "domain": "general-coding",
+      "difficulty": "medium",
+      "file_path": "src/total.js",
+      "file_text": "function total(values) { return values.reduce((a, b) => a + b, 0); }",
+      "prompt": "Suggest a small, behavior-preserving refactor for this function. State one assumption and avoid inventing requirements.\n\nfunction total(values) { let result = 0; for (const value of values) { result += value; } return result; }",
+      "checks": {"required_any": ["reduce", "assumption", "behavior"], "mode": "checklist"},
+      "tags": ["refactor", "scope-control"]
+    }
+  ]
+}

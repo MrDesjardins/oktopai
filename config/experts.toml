@@ -1,0 +1,90 @@
+[[experts]]
+name = "general-coding"
+domain_tags = ["code", "debug", "refactor", "explain"]
+model = "oktopai-general-coding"
+model_kind = "prompt-specialized"
+base_model = "qwen2.5-coder:7b"
+system_prompt = "You are a careful general-purpose coding expert. Explain assumptions and propose small, tested changes."
+extensions = [".py", ".js", ".ts", ".tsx", ".jsx", ".rs", ".go", ".java", ".sql"]
+dependency_signals = []
+priority = 10
+memory_gb = 6.0
+warm_retention_seconds = 900
+
+[[experts]]
+name = "typescript"
+domain_tags = ["typescript", "type", "generic", "debug", "refactor"]
+model = "oktopai-typescript"
+model_kind = "prompt-specialized"
+base_model = "qwen2.5-coder:7b"
+system_prompt = "You are a TypeScript specialist. Give type-safe, idiomatic solutions and explain compiler behavior precisely."
+extensions = [".ts", ".tsx", ".mts", ".cts"]
+dependency_signals = ["typescript", "ts-node", "@types/"]
+priority = 30
+memory_gb = 6.0
+warm_retention_seconds = 900
+
+[[experts]]
+name = "react"
+domain_tags = ["react", "jsx", "component", "rendering", "hooks"]
+model = "oktopai-react"
+model_kind = "prompt-specialized"
+base_model = "qwen2.5-coder:7b"
+system_prompt = "You are a React specialist. Focus on component behavior, hooks, rendering, accessibility, and maintainable fixes."
+extensions = [".jsx", ".tsx"]
+dependency_signals = ["react", "react-dom", "next"]
+priority = 25
+memory_gb = 6.0
+warm_retention_seconds = 900
+
+[[experts]]
+name = "nextjs"
+domain_tags = ["nextjs", "next", "server", "client", "routing"]
+model = "oktopai-nextjs"
+model_kind = "prompt-specialized"
+base_model = "qwen2.5-coder:7b"
+system_prompt = "You are a Next.js specialist. Distinguish server/client boundaries, routing, data fetching, and framework conventions."
+extensions = [".js", ".jsx", ".ts", ".tsx"]
+dependency_signals = ["next", "next-auth"]
+priority = 28
+memory_gb = 6.0
+warm_retention_seconds = 900
+
+[[experts]]
+name = "typescript-trained"
+domain_tags = ["typescript", "type", "generic"]
+model = "oktopai-typescript-trained-q4"
+model_kind = "merged-lora-gguf"
+base_model = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+system_prompt = "You are an experimental trained TypeScript specialist. Prefer type-safe generic APIs and compiler-valid code; be concise and do not invent APIs."
+extensions = [".ts", ".tsx", ".mts", ".cts"]
+dependency_signals = ["typescript", "ts-node", "@types/"]
+priority = 1
+memory_gb = 0.5
+warm_retention_seconds = 300
+
+[[experts]]
+name = "testing"
+domain_tags = ["test", "testing", "pytest", "jest", "vitest", "coverage"]
+model = "oktopai-testing"
+model_kind = "prompt-specialized"
+base_model = "qwen2.5-coder:7b"
+system_prompt = "You are a testing specialist. Design focused, deterministic tests and identify edge cases without over-mocking."
+extensions = [".test.ts", ".spec.ts", ".test.tsx", ".spec.tsx"]
+dependency_signals = ["jest", "vitest", "pytest", "@playwright/test"]
+priority = 24
+memory_gb = 6.0
+warm_retention_seconds = 900
+
+[[experts]]
+name = "typescript-trained-v2"
+domain_tags = ["typescript", "type", "generic"]
+model = "oktopai-typescript-trained-v2-q4"
+model_kind = "merged-lora-gguf"
+base_model = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+system_prompt = "You are an experimental TypeScript specialist v2. Produce compiler-valid, type-safe code and concise explanations. Never use any when a generic constraint or narrowing check solves the problem."
+extensions = [".ts", ".tsx", ".mts", ".cts"]
+dependency_signals = ["typescript", "ts-node", "@types/"]
+priority = 1
+memory_gb = 0.5
+warm_retention_seconds = 300
