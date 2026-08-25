@@ -16,6 +16,7 @@ This directory is the project record. It documents both the working MVP and the 
 - [Experiments](experiments.md) — completed runs and observations.
 - [Local operations](operations.md) — safe commands for Ollama and oktopai.
 - [Training and artifacts](training.md) — future dataset, adapter, distillation, and model-registry plan.
+- [Preference training](preference-training.md) — verified pairs and DPO experiments.
 - [Speed and quality plan](speed-quality-plan.md) — the verified-data, distillation, and optimization program for reliable small experts.
 - [Experiment ledger](experiment-ledger.md) — append-only measurements and provenance for every run.
 - [Build and training status](build.md) — what can run now and what requires additional toolchains.

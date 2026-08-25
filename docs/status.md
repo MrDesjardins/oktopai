@@ -97,3 +97,13 @@ Last updated after the first live local-model experiments.
   Added a strictly test-split 980-task benchmark. On a randomized 20-task CUDA
   sample, both base and v8 verified 1/20 with average score 0.208, so v8 is not
   promoted.
+- The 1/20 result was traced to a benchmark defect: generated prompts omitted
+  their source code. The benchmark generator now embeds each source fixture in
+  the prompt. On the corrected suite, v8 and the base each verified 8/20 with
+  average score 0.617; v8 generated faster (40.64 versus 38.11 tok/s) but did
+  not improve quality.
+- Added an actual TRL DPO path. DPO v1 trained on 1,000 verified pairs for 300
+  CUDA steps in 218.5 seconds with reward accuracy 1.0 during training. Its
+  held-out sample verified 6/20 at average score 0.567, so it is not promoted;
+  the next comparison must rerun base, SFT, and DPO under one identical batch
+  and improve prompt/tokenization consistency.

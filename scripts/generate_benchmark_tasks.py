@@ -38,14 +38,17 @@ def main() -> int:
         family = record.get("family", "typescript")
         checks: dict[str, Any] = dict(FAMILY_CHECKS.get(family, {}))
         checks.update({"mode": "typescript_fixture", "required_source": []})
+        source_code = record.get("source_code", "")
         prompt = record["messages"][-1]["content"]
+        if source_code and source_code not in prompt:
+            prompt += "\n\nSource:\n```typescript\n" + source_code + "\n```"
         tasks.append({
             "id": f"generated-{record['id']}",
             "expert": "typescript",
             "domain": "typescript",
             "difficulty": "generated",
             "file_path": f"src/generated/{family}.ts",
-            "file_text": record.get("source_code", ""),
+            "file_text": source_code,
             "prompt": prompt,
             "checks": checks,
             "tags": ["typescript", family, "generated-heldout"],
