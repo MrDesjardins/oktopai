@@ -54,7 +54,7 @@ scripts/run_benchmark.py         reproducible benchmark runner
 scripts/compare_installed_models.py  installed-model comparison
 src/oktopai/                      application package
 tests/                            offline and opt-in integration tests
-docs/                             project record and research plan
+docs/                             organized project record and research plan
 .oktopai/                         local generated artifacts, ignored by git
 ```
 

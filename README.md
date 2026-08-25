@@ -27,9 +27,9 @@ Use `oktopai preload "Why does this React component rerender?" --file src/App.ts
 
 ## Design
 
-See [docs/architecture.md](docs/architecture.md), [docs/environment.md](docs/environment.md), and [docs/experiments.md](docs/experiments.md). Expert configuration is in [config/experts.toml](config/experts.toml).
+See [docs/guides/architecture.md](docs/guides/architecture.md), [docs/operations/environment.md](docs/operations/environment.md), and [docs/research/experiments.md](docs/research/experiments.md). Expert configuration is in [config/experts.toml](config/experts.toml).
 
-The long-term specialization, distillation, artifact-registry, and hot-swapping strategy is documented in [docs/roadmap.md](docs/roadmap.md).
+The long-term specialization, distillation, artifact-registry, and hot-swapping strategy is documented in [docs/active/roadmap.md](docs/active/roadmap.md).
 
 The complete documentation index is [docs/index.md](docs/index.md). The benchmark can be run with `PYTHONPATH=src python3 scripts/run_benchmark.py --route-only` or against installed local models with `--model` / `--all-installed`.
 

@@ -6,7 +6,7 @@ The benchmark is the evidence layer for oktopai. It measures whether specializat
 
 ## Dataset
 
-The first dataset is [benchmarks/tasks.json](../benchmarks/tasks.json). It is versioned and includes:
+The first dataset is [benchmarks/tasks.json](../../benchmarks/tasks.json). It is versioned and includes:
 
 - stable task ID;
 - expected expert;
@@ -97,7 +97,7 @@ Compare models on the same task IDs, prompts, repository versions, generation se
 
 ## Next.js hot-swap benchmark
 
-The fixture at [benchmarks/nextjs_fixture](../benchmarks/nextjs_fixture) contains two deliberate defects:
+The fixture at [benchmarks/nextjs_fixture](../../benchmarks/nextjs_fixture) contains two deliberate defects:
 
 - `app/page.tsx` uses `useState` without a Client Component directive;
 - `lib/getValue.ts` indexes a generic object with an unconstrained string.

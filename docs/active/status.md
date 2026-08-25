@@ -66,7 +66,7 @@ Last updated after the first live local-model experiments.
 ## Latest research run (2026-08-24/25)
 
 - Added an append-only JSONL experiment ledger at `experiments/runs.jsonl` and
-  documented its measurement policy in `docs/experiment-ledger.md`.
+  documented its measurement policy in `docs/research/experiment-ledger.md`.
 - Downloaded a shallow public `microsoft/TypeScript` checkout locally at commit
   `8ac035a394c79e693a3a7d74cb170448503ee894`; the manifest records 65,905 files
   and license files. Raw source is kept separate from training truth.
