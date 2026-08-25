@@ -132,3 +132,9 @@ Last updated after the first live local-model experiments.
 - The 200-task independent evaluation should be rerun before interpreting the
   overnight quality result. No model is promoted until the disjoint suite,
   family gates, and Ollama GGUF speed measurements pass.
+- The second fixed-seed 100-task evaluation reproduced the direction of the
+  gain: the base verified 21/100 with score 0.402, while `typescript-v3-5000`
+  verified 30/100 with score 0.633. Family analysis shows strong gains on
+  generic-indexed-access and object-constraint, but failures remain on async,
+  unions, mapped types, overloads, and record dictionaries. This is evidence
+  for targeted data expansion, not promotion.
