@@ -83,12 +83,19 @@ def main() -> int:
     parser.add_argument("--version", default=VERSION)
     parser.add_argument("--output", type=Path, default=ROOT / ".oktopai/datasets/typescript-synthetic-v1.jsonl")
     parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--focus", help="comma-separated family indexes to oversample, e.g. 1,2,3")
     args = parser.parse_args()
     VERSION = args.version
     if args.count < 1:
         raise SystemExit("--count must be positive")
     random.seed(17)
-    records = [make(index, index % 10) for index in range(args.count)]
+    if args.focus:
+        focus = [int(value) for value in args.focus.split(",")]
+        if not focus or any(value < 0 or value > 9 for value in focus):
+            raise SystemExit("--focus values must be family indexes from 0 through 9")
+        records = [make(index, focus[index % len(focus)]) for index in range(args.count)]
+    else:
+        records = [make(index, index % 10) for index in range(args.count)]
     verification = verify(records) if args.verify else {"available": None, "verified": None}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("\n".join(json.dumps(item, ensure_ascii=False) for item in records) + "\n")
