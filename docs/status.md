@@ -79,3 +79,11 @@ Last updated after the first live local-model experiments.
   and adapter outputs. v7 is therefore not exported or promoted. This is a
   quality result, not a reason to claim specialization: the next work is a
   larger held-out task suite and better teacher/label filtering.
+- The generated benchmark now contains 3,000 TypeScript tasks. A randomized
+  20-task v7 evaluation produced 8/20 compiler-verified responses for both the
+  base and adapter, with average verification score 0.45. Average generation
+  speed was 27.74 tok/s for the base and 27.83 tok/s for the adapter. The
+  adapter remains unpromoted because it is not measurably better.
+- `train_lora.py` now supports `--device auto|cpu|cuda`, resumable checkpoints
+  with `--resume`, and step-based checkpoint retention. CUDA explicitly fails
+  with an actionable error when the host does not expose a device.

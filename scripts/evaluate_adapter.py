@@ -1,6 +1,6 @@
 """Compare a local Transformers base model with a local PEFT adapter."""
 from pathlib import Path
-import argparse, json, time
+import argparse, json, time, random
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,6 +29,8 @@ def main() -> int:
     parser.add_argument("--domain", default="typescript")
     parser.add_argument("--max-tasks", type=int, default=2)
     parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument("--offset", type=int, default=0)
+    parser.add_argument("--shuffle-seed", type=int, default=None)
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
     try:
@@ -37,7 +39,10 @@ def main() -> int:
     except ImportError as exc:
         raise SystemExit(f"Training dependencies unavailable: {exc}")
 
-    tasks = [t for t in json.loads(args.tasks.read_text())["tasks"] if t.get("domain") == args.domain][:args.max_tasks]
+    tasks = [t for t in json.loads(args.tasks.read_text())["tasks"] if t.get("domain") == args.domain]
+    if args.shuffle_seed is not None:
+        random.Random(args.shuffle_seed).shuffle(tasks)
+    tasks = tasks[args.offset:args.offset + args.max_tasks]
     if not tasks:
         raise SystemExit(f"No tasks found for domain {args.domain}")
     tokenizer = AutoTokenizer.from_pretrained(str(args.base_model), local_files_only=True)
