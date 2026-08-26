@@ -41,6 +41,7 @@ def main() -> int:
     parser.add_argument("--wait-seconds", type=int, default=60)
     parser.add_argument("--max-steps", type=int, default=6000)
     parser.add_argument("--min-accepted", type=int, default=250)
+    parser.add_argument("--min-acceptance-ratio", type=float, default=0.40)
     args = parser.parse_args()
     run_id = args.teacher.stem
     accepted = ROOT / f".oktopai/datasets/{run_id}-verified.jsonl"
@@ -59,14 +60,20 @@ def main() -> int:
     tsc = ROOT / "benchmarks/nextjs_fixture/node_modules/.bin/tsc"
     run([str(sys.executable), "scripts/ingest_verified_teacher_data.py", "--input", str(args.teacher), "--output", str(accepted), "--tsc", str(tsc), "--timeout", "30", "--workers", "8"])
     accepted_count = line_count(accepted)
+    accepted_rows = [json.loads(line) for line in accepted.read_text(encoding="utf-8").splitlines() if line.strip()]
+    family_count = len({row.get("family", "unknown") for row in accepted_rows})
+    acceptance_ratio = accepted_count / args.expected if args.expected else 0.0
     record("verification", f"{run_id}-verification", "completed", {
         "teacher_records": args.expected, "accepted_records": accepted_count,
+        "acceptance_ratio": acceptance_ratio, "families": family_count,
         "output": str(accepted), "compiler": "strict TypeScript",
     })
-    if accepted_count < args.min_accepted:
+    if accepted_count < args.min_accepted or acceptance_ratio < args.min_acceptance_ratio or family_count < 4:
         record("pipeline", f"{run_id}-pipeline", "stopped", {
             "reason": "acceptance_gate_failed", "accepted_records": accepted_count,
             "minimum_required": args.min_accepted,
+            "minimum_acceptance_ratio": args.min_acceptance_ratio,
+            "families": family_count,
         })
         print(json.dumps({"status": "stopped", "reason": "acceptance_gate_failed", "accepted": accepted_count}, indent=2))
         return 3
