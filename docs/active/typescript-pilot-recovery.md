@@ -102,10 +102,31 @@ records. Explanation and review data should be retained in separate datasets.
 7. Require at least 60% verified acceptance overall and 40% in every selected
    code family before training.
 
-The local training environment currently reports no usable CUDA device. Do not
-start a long CPU training run from this 5,000-row corpus; use it for pipeline
-validation and schedule the controlled adapter run on an approved GPU only
-after the corrected teacher/data contract is exercised.
+The managed Codex shell can report no usable CUDA device because WSL GPU
+device access is sandbox-dependent. A permitted local process successfully
+used the RTX 5080 with the installed CUDA training stack on 2026-08-26.
+Record the execution context, device, and package versions for every run; do
+not infer GPU availability from an unprivileged shell alone.
+
+### First local CUDA sanity run (2026-08-26)
+
+The 10,000-record Handbook curriculum (TypeScript plus deliberately included
+JavaScript coverage) was used for a bounded 300-step LoRA run against the
+local Qwen2.5-Coder 0.5B base. It completed in 205 seconds on the RTX 5080.
+Training loss was 0.02602 and validation loss was 0.0003283. On 20 fixed
+held-out tasks, the base verified 3/20 and the adapter verified 6/20. The
+adapter averaged 38.43 generated tokens/second versus 63.97 for the base in
+this comparison. These are raw sanity measurements, not a capability claim:
+the very low validation loss and small held-out sample indicate that this run
+may be overfitting the synthetic contract, and the adapter was slower because
+the evaluation loaded separate base and adapter model instances.
+
+The adapter remains an experimental artifact under `.oktopai/`; the complete
+event, timings, and raw evaluation are preserved in `experiments/runs.jsonl`
+and `.oktopai/evaluations/handbook-v1-heldout-20.json`. This run is supervised
+fine-tuning, not teacher-student distillation. The next training gate is a
+larger, repository-grounded, verified corpus with a fixed held-out project
+suite and an explicit quality improvement over the base.
 
 ## Next remote pilot
 
