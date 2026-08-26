@@ -29,6 +29,19 @@ STYLES = (
     ("repair", "Return the smallest compiler-valid repair for this TypeScript example."),
 )
 
+ANGLES = (
+    "Work under --strict and do not use any.",
+    "Return the smallest safe patch and preserve runtime behavior.",
+    "Explain the compiler reasoning before giving the code change.",
+    "Assume this code is part of a public library API.",
+    "Include nullability and undefined cases explicitly.",
+    "Consider the behavior when a dependency is upgraded.",
+    "Prefer inferred types where inference is clearer than annotations.",
+    "Consider both ESM and CommonJS consumers where modules are involved.",
+    "Include a focused type-level or runtime test when appropriate.",
+    "Review the result for maintainability and accidental type widening.",
+)
+
 
 def snippets(text: str, max_chars: int) -> list[str]:
     text = text.strip()
@@ -62,11 +75,15 @@ def main() -> int:
     parser.add_argument("--max-files", type=int, default=5_000)
     parser.add_argument("--max-chars", type=int, default=8_000)
     parser.add_argument("--styles", default=",".join(style for style, _ in STYLES))
+    parser.add_argument("--angles", default=",".join(str(index) for index in range(len(ANGLES))), help="comma-separated perspective indexes")
     args = parser.parse_args()
     wanted = set(args.styles.split(","))
     styles = [(name, prompt) for name, prompt in STYLES if name in wanted]
     if not styles:
         raise SystemExit("--styles did not select a known task style")
+    angle_indexes = [int(value) for value in args.angles.split(",")]
+    if any(index < 0 or index >= len(ANGLES) for index in angle_indexes):
+        raise SystemExit(f"--angles values must be between 0 and {len(ANGLES) - 1}")
 
     root = args.source.resolve()
     rows: list[dict[str, object]] = []
@@ -91,27 +108,33 @@ def main() -> int:
                 continue
             seen.add(source_hash)
             for style, instruction in styles:
+                for angle_index in angle_indexes:
+                    if len(rows) >= args.limit:
+                        break
+                    angle = ANGLES[angle_index]
+                    task_key = f"{args.repository}:{args.commit}:{relative}:{part_index}:{style}:{angle_index}:{source_hash}"
+                    task_id = "ts-usecase-" + hashlib.sha256(task_key.encode()).hexdigest()[:20]
+                    rows.append({
+                        "id": task_id,
+                        "domain": "typescript",
+                        "task_family": style,
+                        "task_angle": angle_index,
+                        "split": "candidate",
+                        "prompt": f"{instruction} {angle}\n\nSource file: {relative}\n```typescript\n{snippet}\n```",
+                        "source_code": snippet,
+                        "source_path": relative,
+                        "provenance": {
+                            "kind": "public-repository-pattern",
+                            "repository": args.repository,
+                            "commit": args.commit,
+                            "license_review_required": True,
+                            "teacher_answer_required": True,
+                            "source_hash": source_hash,
+                            "angle": angle,
+                        },
+                    })
                 if len(rows) >= args.limit:
                     break
-                task_key = f"{args.repository}:{args.commit}:{relative}:{part_index}:{style}:{source_hash}"
-                task_id = "ts-usecase-" + hashlib.sha256(task_key.encode()).hexdigest()[:20]
-                rows.append({
-                    "id": task_id,
-                    "domain": "typescript",
-                    "task_family": style,
-                    "split": "candidate",
-                    "prompt": f"{instruction}\n\nSource file: {relative}\n```typescript\n{snippet}\n```",
-                    "source_code": snippet,
-                    "source_path": relative,
-                    "provenance": {
-                        "kind": "public-repository-pattern",
-                        "repository": args.repository,
-                        "commit": args.commit,
-                        "license_review_required": True,
-                        "teacher_answer_required": True,
-                        "source_hash": source_hash,
-                    },
-                })
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8") as handle:
         for row in rows:

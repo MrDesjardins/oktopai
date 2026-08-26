@@ -36,12 +36,17 @@ seeds.
 ## Data plan
 
 The repository-grounded corpus builder is `scripts/build_typescript_usecase_corpus.py`.
-It creates many deterministic task variants from real public TypeScript source,
+It creates many deterministic task and perspective variants from real public TypeScript source,
 with repository commit and source hashes attached. A stronger teacher may answer
 the resulting JSONL offline or through an explicitly approved dataset-generation
 service. The answers must then pass through
 `scripts/ingest_verified_teacher_data.py`, which runs strict TypeScript
 compilation and discards unverified answers before student training.
+
+The first expanded run produced 100,000 candidate tasks from 1,000 TypeScript
+source files using ten task families and ten perspectives. These are not yet
+100,000 verified labels: a teacher must answer them, and the local compiler
+filter must accept the answers before they become student data.
 
 Raw volume is not enough. The target corpus is:
 
