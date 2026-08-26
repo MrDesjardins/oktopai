@@ -37,7 +37,14 @@ def main():
     if len(train_data) == 0:
         raise ValueError("Training dataset has no records with split='train'")
     tokenizer=AutoTokenizer.from_pretrained(args.base_model,local_files_only=True)
-    model=AutoModelForCausalLM.from_pretrained(args.base_model,local_files_only=True)
+    use_bf16 = bool(args.device != "cpu" and torch.cuda.is_available() and torch.cuda.is_bf16_supported())
+    model_kwargs = {"local_files_only": True}
+    if use_bf16:
+        model_kwargs["torch_dtype"] = torch.bfloat16
+    model=AutoModelForCausalLM.from_pretrained(args.base_model,**model_kwargs)
+    if use_bf16:
+        model.gradient_checkpointing_enable()
+        model.enable_input_require_grads()
     config=LoraConfig(r=16,lora_alpha=32,lora_dropout=0.05,target_modules=["q_proj","k_proj","v_proj","o_proj"],task_type="CAUSAL_LM")
     model=get_peft_model(model,config)
     def tokenize(item):
@@ -63,6 +70,6 @@ def main():
         return batch
     tokenized=train_data.map(tokenize)
     tokenized_validation=validation_data.map(tokenize) if validation_data is not None and len(validation_data) else None
-    trainer=Trainer(model=model,args=TrainingArguments(output_dir=str(args.output),num_train_epochs=args.epochs,max_steps=args.max_steps,per_device_train_batch_size=1,gradient_accumulation_steps=8,logging_steps=10,save_strategy="steps",save_steps=100,save_total_limit=3,eval_strategy="epoch" if tokenized_validation is not None and not args.no_eval else "no",report_to=[]),train_dataset=tokenized,eval_dataset=None if args.no_eval else tokenized_validation,data_collator=collate)
+    trainer=Trainer(model=model,args=TrainingArguments(output_dir=str(args.output),num_train_epochs=args.epochs,max_steps=args.max_steps,per_device_train_batch_size=1,gradient_accumulation_steps=8,logging_steps=10,save_strategy="steps",save_steps=100,save_total_limit=3,eval_strategy="epoch" if tokenized_validation is not None and not args.no_eval else "no",bf16=use_bf16,gradient_checkpointing=use_bf16,report_to=[]),train_dataset=tokenized,eval_dataset=None if args.no_eval else tokenized_validation,data_collator=collate)
     trainer.train(resume_from_checkpoint=args.resume); model.save_pretrained(args.output); tokenizer.save_pretrained(args.output); print(f"Saved adapter to {args.output}; device={'cuda' if torch.cuda.is_available() else 'cpu'}"); return 0
 if __name__ == "__main__": raise SystemExit(main())

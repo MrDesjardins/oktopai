@@ -8,13 +8,19 @@ import json
 import shutil
 import subprocess
 import tempfile
+import re
 from pathlib import Path
+
+
+def source_text(value: str) -> str:
+    match = re.search(r"```(?:typescript|tsx|javascript|js)?\s*\n?(.*?)```", value, re.DOTALL | re.IGNORECASE)
+    return match.group(1) if match else value
 
 
 def compile_all(items: list[dict], field: str, tsc: str) -> set[str]:
     with tempfile.TemporaryDirectory(prefix="oktopai-prefs-") as directory:
         path = Path(directory) / f"{field}.ts"
-        path.write_text("\n".join(item[field] for item in items), encoding="utf-8")
+        path.write_text("\n".join(source_text(item[field]) for item in items), encoding="utf-8")
         result = subprocess.run([tsc, "--noEmit", "--strict", "--target", "ES2020", str(path)], capture_output=True, text=True)
         if result.returncode == 0:
             return {item["id"] for item in items}
@@ -23,7 +29,7 @@ def compile_all(items: list[dict], field: str, tsc: str) -> set[str]:
     for item in items:
         with tempfile.TemporaryDirectory(prefix="oktopai-pref-one-") as directory:
             path = Path(directory) / "candidate.ts"
-            path.write_text(item[field], encoding="utf-8")
+            path.write_text(source_text(item[field]), encoding="utf-8")
             result = subprocess.run([tsc, "--noEmit", "--strict", "--target", "ES2020", str(path)], capture_output=True, text=True)
             if result.returncode == 0:
                 valid.add(item["id"])

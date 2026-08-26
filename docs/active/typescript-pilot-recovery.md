@@ -128,6 +128,25 @@ fine-tuning, not teacher-student distillation. The next training gate is a
 larger, repository-grounded, verified corpus with a fixed held-out project
 suite and an explicit quality improvement over the base.
 
+### 3B specialist candidate (2026-08-26)
+
+The next local run used `Qwen2.5-Coder-3B-Instruct`, 13,493 merged
+train/validation records, bf16, gradient checkpointing, and 800 CUDA steps.
+It took 1,391 seconds on the RTX 5080. On the same 20 held-out tasks, the
+base verified 10/20 and the adapter verified 12/20; mean generated speed was
+41.13 tok/s for the base and 25.84 tok/s for the adapter in the raw
+Transformers comparison. This is an improvement, but not yet a release gate:
+the sample is small, the corpus is primarily synthetic, and the adapter adds
+runtime overhead in this evaluator.
+
+The merged standalone Transformers checkpoint is at
+`.oktopai/merged/typescript-specialist-v2-3b`. GGUF conversion is currently
+blocked because no local llama.cpp checkout or `llama-quantize` binary is
+installed. The existing Ollama service cannot consume this Transformers
+checkpoint directly; install/build llama.cpp or obtain a compatible conversion
+artifact only as a separately approved step. Until then, the adapter is not
+published as an Ollama model.
+
 ## Next remote pilot
 
 Only after the local recovery gates pass, use Runpod for a 100-task stratified
