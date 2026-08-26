@@ -16,10 +16,28 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 
-def generate(url: str, model: str, prompt: str, max_tokens: int) -> dict:
+def generate(url: str, model: str, prompt: str, max_tokens: int, task_family: str) -> dict:
+    if task_family in {"explain", "review"}:
+        system = (
+            "You are a senior TypeScript reviewer. Explain the source-grounded "
+            "reasoning first. If code is needed, put only compilable TypeScript "
+            "in a fenced ```typescript block. Never claim a command was run."
+        )
+    elif task_family == "test":
+        system = (
+            "You are a senior TypeScript test engineer. Return a focused, "
+            "compilable test or testable TypeScript change in a fenced "
+            "```typescript block. Include no fabricated test results."
+        )
+    else:
+        system = (
+            "You are a senior TypeScript engineer. Return the smallest "
+            "compiler-valid TypeScript change in exactly one fenced "
+            "```typescript block. Do not put prose inside the code block."
+        )
     payload = {
         "model": model,
-        "system": "You are a senior TypeScript engineer. Return a concise, compiler-valid answer grounded in the supplied source. Prefer code over prose.",
+        "system": system,
         "prompt": prompt,
         "stream": False,
         "options": {"temperature": 0.1, "num_predict": max_tokens},
@@ -59,7 +77,7 @@ def main() -> int:
     count = 0
     source = gzip.open(args.input, "rt", encoding="utf-8") if args.input.suffix == ".gz" else args.input.open(encoding="utf-8")
     def answer(index: int, task: dict) -> tuple[int, dict]:
-        result = generate(args.ollama_url, args.model, task["prompt"], args.max_tokens)
+        result = generate(args.ollama_url, args.model, task["prompt"], args.max_tokens, task.get("task_family", "repair"))
         return index, {
                 "task_id": task["id"],
                 "task": task,
