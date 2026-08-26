@@ -119,3 +119,27 @@ the Runpod account was confirmed to have zero Pods afterward.
 Before retrying, register and verify the local public SSH key in Runpod account
 settings or through `runpodctl` SSH-key setup. Pod creation should remain blocked
 until a non-interactive SSH command succeeds.
+
+## Successful pilot provisioning
+
+On 2026-08-26 the registered key was accepted by a Secure Cloud A40 Pod:
+
+- Pod: `9793s4612yjtgg` (`oktopai-typescript-teacher-pilot`)
+- GPU: NVIDIA A40, 48 GB class, CUDA 12.8
+- Image: `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404`
+- Persistent mount: `/workspace`, 50 GB
+- Observed price: `$0.44/hour`
+- Remote workspace: `/workspace/oktopai-run/`
+
+The private GitHub repository cannot be cloned anonymously from the Pod. No
+GitHub credential is copied to the Pod. Instead, the compressed corpus was
+downloaded from the private release using a short-lived signed asset URL, and
+the small remote teacher script was transferred from the checked-in commit.
+Both compressed and decompressed corpus checksums matched the local manifest.
+
+Ollama was installed inside the Pod and detected the A40 through CUDA. The
+teacher checkpoint is `qwen2.5-coder:14b`; Ollama reported a 15 GB model and
+loaded it at 100% GPU residency. A one-task smoke test completed successfully
+in 10.6 seconds at 128 output tokens. The bounded pilot is running with 500
+tasks, 384 maximum output tokens, and incremental JSONL persistence. It must
+be inspected and verified before any larger paid generation run.
