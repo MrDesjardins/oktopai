@@ -107,3 +107,15 @@ If the connection fails, the manifest and JSONL offsets allow resuming from the
 last completed batch. If the Pod disappears, the local copies remain the source
 of truth. If a teacher answer is invalid, it is retained as a rejected example
 for preference training rather than discarded without evidence.
+
+## First provisioning attempt
+
+The first A40 Secure Cloud Pod was created on 2026-08-26 at approximately
+$0.44/hour with 50 GB persistent Pod storage. The container booted and reported
+CUDA 12.8 and a ready SSH service, but the SSH proxy rejected the supplied local
+ed25519 key. No corpus or model was uploaded. The empty Pod was terminated and
+the Runpod account was confirmed to have zero Pods afterward.
+
+Before retrying, register and verify the local public SSH key in Runpod account
+settings or through `runpodctl` SSH-key setup. Pod creation should remain blocked
+until a non-interactive SSH command succeeds.
