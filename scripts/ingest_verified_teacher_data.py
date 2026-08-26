@@ -15,6 +15,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -23,29 +24,33 @@ def main() -> int:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--tsc", default=None)
+    parser.add_argument("--timeout", type=int, default=30, help="Maximum compiler seconds per record")
+    parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     tsc = args.tsc or shutil.which("tsc")
     if not tsc:
         raise SystemExit("TypeScript compiler not found; install/use the project fixture compiler")
     accepted: list[dict] = []
     rejected = 0
-    for line in args.input.read_text(encoding="utf-8").splitlines():
-        item = json.loads(line)
+    items = [json.loads(line) for line in args.input.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    def verify(item: dict) -> dict | None:
         task = item.get("task", item)
         completion = item.get("completion", "")
         blocks = re.findall(r"```(?:typescript|tsx|ts)?\s*\n(.*?)```", completion, re.IGNORECASE | re.DOTALL)
         code = "\n\n".join(blocks) if blocks else completion.strip()
         if not code:
-            rejected += 1
-            continue
+            return None
         with tempfile.TemporaryDirectory(prefix="oktopai-teacher-verify-") as directory:
             path = Path(directory) / "candidate.ts"
             path.write_text(code, encoding="utf-8")
-            result = subprocess.run([tsc, "--noEmit", "--strict", "--target", "ES2020", str(path)], capture_output=True, text=True)
+            try:
+                result = subprocess.run([tsc, "--noEmit", "--strict", "--target", "ES2020", str(path)], capture_output=True, text=True, timeout=args.timeout)
+            except subprocess.TimeoutExpired:
+                return None
         if result.returncode != 0:
-            rejected += 1
-            continue
-        record = {
+            return None
+        return {
             "id": task["id"],
             "domain": "typescript",
             "family": task.get("task_family", "unknown"),
@@ -58,7 +63,12 @@ def main() -> int:
             "source_code": task.get("source_code", ""),
             "provenance": {**task.get("provenance", {}), "teacher": item.get("teacher"), "verification_status": "tsc-strict"},
         }
-        accepted.append(record)
+    with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+        for record in pool.map(verify, items):
+            if record is None:
+                rejected += 1
+            else:
+                accepted.append(record)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in accepted) + ("\n" if accepted else ""), encoding="utf-8")
     print(json.dumps({"output": str(args.output), "accepted": len(accepted), "rejected": rejected}, indent=2))

@@ -56,7 +56,7 @@ def main() -> int:
         time.sleep(args.wait_seconds)
 
     tsc = ROOT / "benchmarks/nextjs_fixture/node_modules/.bin/tsc"
-    run([str(sys.executable), "scripts/ingest_verified_teacher_data.py", "--input", str(args.teacher), "--output", str(accepted), "--tsc", str(tsc)])
+    run([str(sys.executable), "scripts/ingest_verified_teacher_data.py", "--input", str(args.teacher), "--output", str(accepted), "--tsc", str(tsc), "--timeout", "30", "--workers", "8"])
     accepted_count = line_count(accepted)
     record("verification", "typescript-repository-qwen7b-v1", "completed", {
         "teacher_records": args.expected, "accepted_records": accepted_count,
