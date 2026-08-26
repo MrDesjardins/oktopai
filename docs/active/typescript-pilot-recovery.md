@@ -147,6 +147,16 @@ checkpoint directly; install/build llama.cpp or obtain a compatible conversion
 artifact only as a separately approved step. Until then, the adapter is not
 published as an Ollama model.
 
+That conversion path was completed locally after discovering an existing
+project-local llama.cpp checkout under `.oktopai/tools/llama.cpp`. The merged
+checkpoint was exported as Q4_K_M (1.83 GB) and registered as `oktopai-ts:3b`.
+On the five-task Ollama smoke benchmark, successful requests generated at
+approximately 253-256 tok/s, demonstrating that the serving path is fast
+enough for the hot-swap thesis. However, the smoke suite verified 0/5 outputs
+and one request saw a transient Ollama availability error. This is a speed
+success but a quality failure; the model must not be promoted until it passes
+a larger TypeScript-only held-out project suite.
+
 ## Next remote pilot
 
 Only after the local recovery gates pass, use Runpod for a 100-task stratified
