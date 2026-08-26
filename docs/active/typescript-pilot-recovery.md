@@ -22,6 +22,22 @@ The result is a failed data-quality gate and a successful instrumentation
 experiment. It does not justify training the student or spending more on
 Runpod yet.
 
+## Synthetic contract dataset completed
+
+To replace the missing reliable examples without another paid run, the
+programmatic contract generator produced 5,000 deterministic records at
+`.oktopai/datasets/typescript-contract-v1-5000.jsonl`:
+
+- 8 balanced families, including a dedicated test family;
+- 3,736 train, 756 validation, and 508 test records;
+- every completion is fenced TypeScript with an explicit output contract;
+- the combined completion file passed strict TypeScript compilation;
+- provenance marks every row as synthetic rather than human or teacher truth.
+
+This is a verified supervised seed corpus, not yet a distilled corpus. It can
+be used to test the student training pipeline, but the next quality increase
+requires teacher trajectories and repository-level fixtures on top of it.
+
 ## Correct data contract
 
 Split TypeScript tasks into distinct output contracts:
@@ -53,6 +69,11 @@ records. Explanation and review data should be retained in separate datasets.
 6. Require at least 80% schema compliance before another remote pilot.
 7. Require at least 60% verified acceptance overall and 40% in every selected
    code family before training.
+
+The local training environment currently reports no usable CUDA device. Do not
+start a long CPU training run from this 5,000-row corpus; use it for pipeline
+validation and schedule the controlled adapter run on an approved GPU only
+after the corrected teacher/data contract is exercised.
 
 ## Next remote pilot
 
