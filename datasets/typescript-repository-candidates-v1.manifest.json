@@ -1,0 +1,12 @@
+{
+  "dataset": "typescript-repository-candidates-v1",
+  "records": 2450,
+  "status": "candidate_only_requires_teacher_verification",
+  "source_repository": "microsoft/TypeScript",
+  "source_commit": "8ac035a394c79e693a3a7d74cb170448503ee894",
+  "source_manifest": ".oktopai/sources/github/microsoft-TypeScript.manifest.json",
+  "working_path": ".oktopai/datasets/typescript-repository-candidates.jsonl",
+  "sha256": "71d34e91e6250cb692452b3fb36b3e7aefcc97b3f4117086f9d9969ead126f49",
+  "license_note": "Review the TypeScript repository license before redistributing derived records.",
+  "privacy": "Public source collected locally; no repository content was sent to a remote model."
+}
