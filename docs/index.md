@@ -24,6 +24,7 @@ This directory is the project record. It documents both the working MVP and the 
 - [Tool-using specialists](active/tool-using-specialists.md) — tool selection, trajectories, validators, and host integration.
 - [Runpod teacher-data plan](active/runpod-teacher-data-plan.md) — persistent remote generation, quality gates, transfer, and cost controls.
 - [Speed and quality plan](active/speed-quality-plan.md) — the verified-data, distillation, and optimization program for reliable small experts.
+- [Usable local orchestrator roadmap](active/usable-local-orchestrator-roadmap.md) — ordered path to a verified TypeScript, Next.js, CSS, and SQLite website workflow.
 
 ## Archived
 
