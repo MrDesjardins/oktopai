@@ -143,3 +143,21 @@ loaded it at 100% GPU residency. A one-task smoke test completed successfully
 in 10.6 seconds at 128 output tokens. The bounded pilot is running with 500
 tasks, 384 maximum output tokens, and incremental JSONL persistence. It must
 be inspected and verified before any larger paid generation run.
+
+### GPU utilization and concurrency note
+
+The A40 reports approximately 14.9 GiB used out of 46.1 GiB while the 14B
+model is loaded at 100% GPU residency. This is expected: `100% GPU` describes
+placement of the model, not filling every byte of VRAM. The quantized weights
+are about 15 GB; the remaining VRAM is available for KV cache, larger context,
+and concurrent sequences. The first pilot intentionally uses one sequential
+request (`OLLAMA_NUM_PARALLEL=1`) so its latency measurements are easy to
+interpret.
+
+After the sequential quality gate, the next throughput experiment is bounded
+concurrency: restart Ollama with one model, `OLLAMA_NUM_PARALLEL=4`, and a
+smaller context limit, then run the teacher script with `--workers 4`. This
+should improve aggregate records/second without loading four copies of the
+weights. It may reduce per-request token/second, so both metrics must be
+reported. Increasing concurrency is a throughput experiment, not a reason to
+force VRAM allocation or claim that quality improved.

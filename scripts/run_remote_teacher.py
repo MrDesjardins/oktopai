@@ -12,6 +12,7 @@ import gzip
 import json
 import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 
@@ -46,6 +47,8 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=500)
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--max-tokens", type=int, default=512)
+    parser.add_argument("--workers", type=int, default=1,
+                        help="Concurrent Ollama requests; use a small bounded value")
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     completed = set()
@@ -55,17 +58,9 @@ def main() -> int:
                 completed.add(json.loads(line)["task_id"])
     count = 0
     source = gzip.open(args.input, "rt", encoding="utf-8") if args.input.suffix == ".gz" else args.input.open(encoding="utf-8")
-    with source, args.output.open("a", encoding="utf-8") as handle:
-        for index, line in enumerate(source):
-            if index < args.offset:
-                continue
-            if count >= args.limit:
-                break
-            task = json.loads(line)
-            if task["id"] in completed:
-                continue
-            result = generate(args.ollama_url, args.model, task["prompt"], args.max_tokens)
-            record = {
+    def answer(index: int, task: dict) -> tuple[int, dict]:
+        result = generate(args.ollama_url, args.model, task["prompt"], args.max_tokens)
+        return index, {
                 "task_id": task["id"],
                 "task": task,
                 "teacher": args.model,
@@ -76,10 +71,25 @@ def main() -> int:
                 "generation_duration_ns": result.get("eval_duration"),
                 "created_at": time.time(),
             }
-            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
-            handle.flush()
-            count += 1
-            print(json.dumps({"index": index, "completed": count, "task_id": task["id"], "seconds": result.get("elapsed_seconds")}), flush=True)
+
+    pending: list[tuple[int, dict]] = []
+    for index, line in enumerate(source):
+        if index < args.offset:
+            continue
+        if len(pending) >= args.limit:
+            break
+        task = json.loads(line)
+        if task["id"] not in completed:
+            pending.append((index, task))
+    with source, args.output.open("a", encoding="utf-8") as handle:
+        with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+            futures = [pool.submit(answer, index, task) for index, task in pending]
+            for future in as_completed(futures):
+                index, record = future.result()
+                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+                handle.flush()
+                count += 1
+                print(json.dumps({"index": index, "completed": count, "task_id": record["task_id"], "seconds": record["generation_seconds"]}), flush=True)
     print(json.dumps({"output": str(args.output), "generated": count, "resumable_records": len(completed) + count, "model": args.model}, indent=2))
     return 0
 
