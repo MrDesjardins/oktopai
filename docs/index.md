@@ -21,6 +21,7 @@ This directory is the project record. It documents both the working MVP and the 
 - [Training and artifacts](guides/training.md) — future dataset, adapter, distillation, and model-registry plan.
 - [Preference training](guides/preference-training.md) — verified pairs and DPO experiments.
 - [TypeScript specialist plan](active/typescript-specialist-plan.md) — teacher–student data, LoRA versus full-model training, evaluation, and hardware strategy.
+- [Tool-using specialists](active/tool-using-specialists.md) — tool selection, trajectories, validators, and host integration.
 - [Runpod teacher-data plan](active/runpod-teacher-data-plan.md) — persistent remote generation, quality gates, transfer, and cost controls.
 - [Speed and quality plan](active/speed-quality-plan.md) — the verified-data, distillation, and optimization program for reliable small experts.
 
