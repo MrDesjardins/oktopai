@@ -205,6 +205,107 @@ the runtime/model combination supports it, and a stretch target above 300
 tok/s. These are performance targets, not quality guarantees; every result
 must include model size, quantization, context, concurrency, and hardware.
 
+## Runpod delegation policy
+
+Runpod is an accelerator for expensive, reproducible experiments—not a
+required runtime dependency. The local machine remains the source of truth for
+code, manifests, benchmark definitions, checksums, and promotion decisions.
+
+### Keep work local
+
+Run locally when work is interactive, small, privacy-sensitive, or needed for
+final acceptance:
+
+- routing, lifecycle, tool-policy, and unit tests;
+- final evaluation against the local website fixture;
+- smoke tests, adapter comparisons, and hot-swap demonstrations;
+- repository-specific code not explicitly packaged for remote use;
+- artifact checksum and manifest validation after download.
+
+### Delegate to Runpod
+
+Delegate only after a local dry run and only for bounded, resumable workloads:
+
+1. stronger-teacher generation for repository-grounded trajectories;
+2. thousands of independent compiler, test, browser, or database checks;
+3. QLoRA/adapter training when local CUDA is unavailable or insufficient;
+4. quantization and runtime comparisons;
+5. bounded parallel-throughput experiments.
+
+Do not delegate an unverified idea, an open-ended generation loop, or a task
+without a measurable acceptance criterion.
+
+### Remote experiment gates
+
+Every Runpod job follows this order:
+
+1. local script dry-run and dependency probe;
+2. input manifest containing Git commit, dataset hash, model identifier,
+   prompt version, and expected schema;
+3. 100–500 record pilot;
+4. remote quality and cost check;
+5. explicit continuation threshold;
+6. resumable larger batches;
+7. periodic synchronization to local storage;
+8. local verification and held-out evaluation;
+9. promotion only after the specialist beats its baseline.
+
+The current TypeScript teacher pilot follows this process. Raw teacher records
+are not student truth until local strict TypeScript verification accepts them.
+
+### Pod, storage, and privacy rules
+
+- Prefer a secure A40 for a quantized 14B teacher or medium adapter run.
+- Use an A100 80 GB only when model size, context, batch size, or training
+  demonstrably exceeds the A40.
+- Avoid 32B+ teachers until a smaller teacher fails a documented quality gate.
+- Mount persistent `/workspace` storage and write JSONL incrementally.
+- Keep raw answers, accepted records, rejected records, metrics, logs, and
+  checkpoints as separate artifacts.
+- Never place GitHub credentials or private repository secrets on the Pod.
+- Use signed dataset assets or a minimal explicit transfer package instead of
+  requiring a private repository clone.
+- Copy outputs back and verify SHA-256 before terminating the Pod.
+- Terminate rather than merely stop the Pod after synchronization.
+
+### Cost controls
+
+Each run records GPU price, start/end time, storage, transfer size, model
+download size, generated records, accepted records, and cost per accepted
+verified record. Stop when the pilot fails its quality threshold, output is
+duplicative, cost per accepted record exceeds the budget, or the required
+artifact has been synchronized and verified. Remaining account credit alone is
+not a reason to extend a low-value run.
+
+### Remote return package
+
+Every completed run must return:
+
+```text
+run-manifest.json
+teacher-answers.jsonl
+accepted-training.jsonl
+rejected.jsonl
+metrics.jsonl
+model-or-adapter/
+checksums.sha256
+```
+
+The local pipeline verifies schemas, provenance, compiler/tool results, model
+metadata, and held-out performance. Loss curves or remote throughput alone
+cannot promote a specialist.
+
+### Delegation by phase
+
+| Phase | Local responsibility | Runpod responsibility |
+| --- | --- | --- |
+| Foundation | router, tools, lifecycle, fixture | none unless runtime comparison is needed |
+| TypeScript data | task schema, verifier, held-out split | stronger teacher trajectories and large verification |
+| TypeScript training | baseline and final evaluation | QLoRA/adapter sweeps when local CUDA is insufficient |
+| Next.js/CSS/SQLite data | fixtures and validators | teacher generation after TypeScript process is proven |
+| Multi-domain benchmark | final website and acceptance | optional parallel speed/memory experiments |
+| Artifact registry | manifests, checksums, promotion | temporary compute only; never the only artifact copy |
+
 ## Artifact and version strategy
 
 Experts target durable concepts plus declared version ranges. Do not train one
