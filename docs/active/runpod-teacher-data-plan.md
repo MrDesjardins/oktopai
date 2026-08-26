@@ -161,3 +161,29 @@ should improve aggregate records/second without loading four copies of the
 weights. It may reduce per-request token/second, so both metrics must be
 reported. Increasing concurrency is a throughput experiment, not a reason to
 force VRAM allocation or claim that quality improved.
+
+## Pilot result and closeout (2026-08-26)
+
+The A40 pilot completed with 501 raw records: one smoke-test record plus 500
+pilot tasks. The compressed input and raw output were copied locally and their
+SHA-256 checksums matched the remote manifest.
+
+Local strict TypeScript verification accepted 69 records and rejected 432,
+which is a 13.8% acceptance rate over the 500 pilot tasks. Accepted examples
+covered 9 of 10 families; the `test` family had no accepted records. This fails
+the predeclared quality gates of 60% overall and 40% per family. The result is
+valuable negative evidence, but it is not sufficient to train or promote a
+student model. No larger paid teacher run was started.
+
+A 20-record four-worker throughput sample completed in 118.067 seconds, about
+0.169 records/second. The sequential pilot's mean generation duration was
+15.32 seconds, about 0.065 records/second by generation-time estimate, giving
+an approximate 2.6x aggregate throughput improvement. This is a small runtime
+sample, not a quality comparison; individual concurrent requests were often
+slower because they shared the GPU.
+
+The fixed local route suite remained 100% accurate at 0.705 ms routing latency.
+The normal Python suite passed 10 tests with one optional integration test
+skipped. A live local Ollama endpoint was unavailable, so no new local
+generation quality claim was made. The Pod should be terminated only after the
+parallel sample and all checksums are confirmed locally.
