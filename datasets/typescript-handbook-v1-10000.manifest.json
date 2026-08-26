@@ -1,0 +1,17 @@
+{
+  "name": "typescript-handbook-v1-10000",
+  "artifact": "typescript-handbook-v1-10000.jsonl.gz",
+  "records": 10000,
+  "families": 24,
+  "languages": {"typescript": 8752, "javascript": 1248},
+  "generator": "scripts/generate_typescript_handbook_curriculum.py",
+  "generator_commit": "1c89c26",
+  "synthetic": true,
+  "compiler_verified": true,
+  "jsonl_sha256": "472a75f53d1f52841616ec7172b86edbcd04396293a7c877269f08d52c5538f4",
+  "compressed_sha256": "da72acf97b2c16253812b0e2e0cea74abf18c8fec28d1c89ae9857bf439948d9",
+  "release_tag": "data-typescript-usecases-v2-100k",
+  "release_asset": "https://github.com/MrDesjardins/oktopai/releases/download/data-typescript-usecases-v2-100k/typescript-handbook-v1-10000.jsonl.gz",
+  "documentation": "https://www.typescriptlang.org/docs/handbook/",
+  "license_note": "Programmatic synthetic seed data; documentation links retained in row provenance."
+}

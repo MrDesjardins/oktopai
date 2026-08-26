@@ -1,0 +1,16 @@
+{
+  "name": "typescript-contract-v1-5000",
+  "artifact": "typescript-contract-v1-5000.jsonl.gz",
+  "records": 5000,
+  "families": 8,
+  "splits": {"train": 3736, "validation": 756, "test": 508},
+  "generator": "scripts/generate_typescript_contract_data.py",
+  "generator_commit": "6fbd2a9",
+  "synthetic": true,
+  "compiler_verified": true,
+  "jsonl_sha256": "8ec7c9145ba6a864016943db238d448069f787fb5cbcd80e0603024f63f872bd",
+  "compressed_sha256": "60e752784bfa111d7bab6fe6b7461e8fcc1ef04e34bb21e0e11070141620b2b6",
+  "release_tag": "data-typescript-usecases-v2-100k",
+  "release_asset": "https://github.com/MrDesjardins/oktopai/releases/download/data-typescript-usecases-v2-100k/typescript-contract-v1-5000.jsonl.gz",
+  "license_note": "Programmatic synthetic seed data; not human or teacher truth."
+}

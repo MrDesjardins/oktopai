@@ -64,6 +64,12 @@ be combined with repository-grounded repairs, version-specific compiler cases,
 tool trajectories, and held-out project fixtures before making a capability
 claim.
 
+The compressed artifact is persisted in the private GitHub release
+`data-typescript-usecases-v2-100k`; the tracked manifest contains its URL and
+both raw and compressed checksums. The smaller contract corpus is persisted in
+the same release as well. The ignored `.oktopai/` copies are working caches,
+not the only copies.
+
 ## Correct data contract
 
 Split TypeScript tasks into distinct output contracts:
