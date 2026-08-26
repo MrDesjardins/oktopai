@@ -42,9 +42,10 @@ def main() -> int:
     parser.add_argument("--max-steps", type=int, default=6000)
     parser.add_argument("--min-accepted", type=int, default=250)
     args = parser.parse_args()
-    accepted = ROOT / ".oktopai/datasets/typescript-repository-qwen7b-verified-v1.jsonl"
-    adapter = ROOT / ".oktopai/adapters/typescript-repository-qwen7b-student-v1"
-    evaluation = ROOT / ".oktopai/evaluations/typescript-repository-qwen7b-student-v1-heldout-200.json"
+    run_id = args.teacher.stem
+    accepted = ROOT / f".oktopai/datasets/{run_id}-verified.jsonl"
+    adapter = ROOT / f".oktopai/adapters/{run_id}-student"
+    evaluation = ROOT / f".oktopai/evaluations/{run_id}-student-heldout-200.json"
 
     record("pipeline", "typescript-local-overnight-v1", "started", {
         "teacher": str(args.teacher), "expected_records": args.expected,
@@ -58,19 +59,19 @@ def main() -> int:
     tsc = ROOT / "benchmarks/nextjs_fixture/node_modules/.bin/tsc"
     run([str(sys.executable), "scripts/ingest_verified_teacher_data.py", "--input", str(args.teacher), "--output", str(accepted), "--tsc", str(tsc), "--timeout", "30", "--workers", "8"])
     accepted_count = line_count(accepted)
-    record("verification", "typescript-repository-qwen7b-v1", "completed", {
+    record("verification", f"{run_id}-verification", "completed", {
         "teacher_records": args.expected, "accepted_records": accepted_count,
         "output": str(accepted), "compiler": "strict TypeScript",
     })
     if accepted_count < args.min_accepted:
-        record("pipeline", "typescript-local-overnight-v1", "stopped", {
+        record("pipeline", f"{run_id}-pipeline", "stopped", {
             "reason": "acceptance_gate_failed", "accepted_records": accepted_count,
             "minimum_required": args.min_accepted,
         })
         print(json.dumps({"status": "stopped", "reason": "acceptance_gate_failed", "accepted": accepted_count}, indent=2))
         return 3
 
-    record("training", "typescript-repository-qwen7b-student-v1", "started", {
+    record("training", f"{run_id}-student", "started", {
         "data": str(accepted), "records": accepted_count, "steps": args.max_steps,
         "device": "cuda", "base_model": ".oktopai/hf-bases/qwen2.5-coder-3b",
     })
@@ -78,7 +79,7 @@ def main() -> int:
          "--base-model", str(ROOT / ".oktopai/hf-bases/qwen2.5-coder-3b"),
          "--output", str(adapter), "--train", "--device", "cuda",
          "--max-steps", str(args.max_steps), "--epochs", "3", "--no-eval"])
-    record("training", "typescript-repository-qwen7b-student-v1", "completed", {
+    record("training", f"{run_id}-student", "completed", {
         "data": str(accepted), "records": accepted_count, "steps": args.max_steps,
         "adapter": str(adapter), "device": "cuda",
     })
@@ -87,7 +88,7 @@ def main() -> int:
          "--adapter", str(adapter), "--tasks", str(ROOT / "benchmarks/typescript-heldout-980.json"),
          "--domain", "typescript", "--max-tasks", "200", "--shuffle-seed", "20260826",
          "--max-new-tokens", "256", "--device", "cuda", "--output", str(evaluation)])
-    record("evaluation", "typescript-repository-qwen7b-student-v1-heldout-200", "completed", {
+    record("evaluation", f"{run_id}-student-heldout-200", "completed", {
         "adapter": str(adapter), "tasks": 200, "device": "cuda", "raw": str(evaluation),
         "quality_gate": "manual_review_required",
     })

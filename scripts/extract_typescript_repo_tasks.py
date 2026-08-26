@@ -17,6 +17,21 @@ from pathlib import Path
 KEYWORDS = ("generic", "union", "narrow", "type", "infer", "module", "jsx", "decorator", "mapped")
 
 
+def family(path: str) -> str:
+    lowered = path.lower()
+    for name, signals in {
+        "generic": ("generic", "infer", "mapped"),
+        "union-narrowing": ("union", "narrow", "discriminated"),
+        "module": ("module", "import", "export", "declaration"),
+        "jsx": ("jsx", "tsx"),
+        "decorator": ("decorator",),
+        "type-system": ("type",),
+    }.items():
+        if any(signal in lowered for signal in signals):
+            return name
+    return "compiler-conformance"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
@@ -40,12 +55,14 @@ def main() -> int:
             "domain": "typescript",
             "task_type": "repository-context-teacher-review",
             "prompt": (
-                "Analyze this TypeScript compiler conformance fixture. Explain the "
-                "type-system behavior it tests, identify any intentional errors, "
-                "and propose a minimal corrected example if useful."
+                "Use this TypeScript compiler conformance fixture as reference. "
+                "Return one small, standalone, valid TypeScript example that "
+                "teaches the same concept. Do not copy intentional errors from "
+                "the fixture. The answer must compile under strict TypeScript."
             ),
             "source_code": text,
             "source_path": relative,
+            "task_family": family(relative),
             "provenance": {
                 "kind": "public-github",
                 "repository": "microsoft/TypeScript",
