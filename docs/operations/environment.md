@@ -31,3 +31,18 @@ healthy: `/dev/dxg` and `libcuda.so.1` are present, `nvidia-smi` reports an
 NVIDIA GeForce RTX 5080 with 15.92 GiB VRAM, and PyTorch sees one CUDA device.
 Earlier checks were sandbox-restricted. GPU training is now enabled with
 `scripts/train_lora.py --device cuda`.
+
+## Current Codex-session visibility check (2026-08-26)
+
+In the current managed Codex WSL session, GPU access is blocked again:
+
+- kernel: WSL2 `6.6.87.2-microsoft-standard-WSL2`;
+- `/usr/lib/wsl/lib/nvidia-smi` exists but reports `GPU access blocked by the operating system`;
+- `/dev/nvidia*` device nodes are absent;
+- PyTorch `2.13.0+cu130` reports `cuda_available = False` and zero devices.
+
+This is not a missing CUDA-enabled PyTorch wheel. WSL CUDA uses the Windows
+host driver and GPU virtualization; installing a Linux NVIDIA driver inside
+WSL is not the correct fix. The failure is at the host/WSL or managed-session
+visibility layer. Runpod previously confirmed that the project training stack
+works with CUDA on an A40.
