@@ -1,0 +1,16 @@
+{
+  "name": "typescript-repository-usecases-v2-100k",
+  "artifact": "typescript-repository-usecases-v2-100k.jsonl.gz",
+  "records": 100000,
+  "source_files": 1000,
+  "repository": "microsoft/TypeScript",
+  "source_commit": "8ac035a394c79e693a3a7d74cb170448503ee894",
+  "generator": "scripts/build_typescript_usecase_corpus.py",
+  "generator_commit": "7bc8781",
+  "task_families": 10,
+  "perspectives": 10,
+  "status": "candidate-teacher-corpus",
+  "verified_answers": false,
+  "sha256": "4ae73582cc1252aa38a56008c97f209d08d005af8ef682a59f358b650e75c6cb",
+  "license_note": "Source-derived candidate tasks require review of the upstream repository license before redistribution or commercial training."
+}
