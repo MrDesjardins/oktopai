@@ -49,6 +49,14 @@ the machine has 16 GB VRAM. A remote large teacher such as GLM-5.3-Flash is a
 separate cost/privacy decision. Promote a teacher only when it wins on
 verified acceptance, family coverage, and accepted records per unit time.
 
+That comparison was completed locally on 2026-08-26. Qwen3-Coder 30B passed
+strict compilation on 50/50 repository tasks, compared with 503/2,450 (20.5%)
+for the corrected Qwen2.5-Coder 7B pass. Its warm answers took about 1.1-1.6
+seconds each in this task shape. The 30B model is therefore the selected local
+teacher for the next full corpus. It is larger than VRAM and may offload, but
+the sample quality advantage justifies measuring it before spending training
+time. The full 2,450-record pass is resumable and currently running.
+
 Train, validation, and test records must be split by repository fixture or
 task family, not by near-duplicate lines. The fixed held-out project suite is
 the release gate.
