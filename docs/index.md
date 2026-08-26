@@ -17,6 +17,7 @@ This directory is the project record. It documents both the working MVP and the 
 - [Build and training status](operations/build.md) — what can run now and what requires additional toolchains.
 - [Experiments](research/experiments.md) — completed runs and observations.
 - [Experiment ledger](research/experiment-ledger.md) — append-only measurements and provenance for every run.
+- [Paper data collection](research/paper-data-collection.md) — measurement contract and post-run execution protocol.
 - [Architecture decisions](research/decisions.md) — explicit tradeoffs and rejected shortcuts.
 - [Training and artifacts](guides/training.md) — future dataset, adapter, distillation, and model-registry plan.
 - [Preference training](guides/preference-training.md) — verified pairs and DPO experiments.
