@@ -34,6 +34,21 @@ The next data builder must produce separate families for:
 - compiler configuration and version migrations;
 - tool trajectories: inspect, edit, compile, test, and summarize.
 
+## Teacher results
+
+The first local 7B pass used the original analysis prompt and produced only
+71/2,450 strict-compiling answers (2.9%). It was rejected. A corrected pass
+requested standalone valid examples and produced 503/2,450 (20.5%) across five
+families. This is meaningful progress in task-contract quality, but it still
+fails the 40% acceptance gate and must not be used for student training.
+
+The next comparison should use a stronger teacher on a stratified sample
+before generating thousands more records. Candidates already installed
+locally include Qwen3-Coder 30B, although it may offload some weights because
+the machine has 16 GB VRAM. A remote large teacher such as GLM-5.3-Flash is a
+separate cost/privacy decision. Promote a teacher only when it wins on
+verified acceptance, family coverage, and accepted records per unit time.
+
 Train, validation, and test records must be split by repository fixture or
 task family, not by near-duplicate lines. The fixed held-out project suite is
 the release gate.
