@@ -38,6 +38,32 @@ This is a verified supervised seed corpus, not yet a distilled corpus. It can
 be used to test the student training pipeline, but the next quality increase
 requires teacher trajectories and repository-level fixtures on top of it.
 
+## Handbook curriculum expansion
+
+The official TypeScript Handbook topic map was used to expand the synthetic
+curriculum beyond the original repair templates. The generator now covers
+primitives, arrays, tuples, literal types, optional properties, unions,
+narrowing, `unknown`, predicates, discriminated unions, `never`, callbacks,
+overloads, generic constraints, `keyof`, conditional types, mapped types,
+template literal types, utility types, classes, async returns, and declaration
+files. It also includes JavaScript cases for JSDoc contracts, null narrowing,
+and `checkJs` behavior.
+
+The generated artifact is
+`.oktopai/datasets/typescript-handbook-v1-10000.jsonl`:
+
+- 10,000 deterministic records;
+- 8,752 TypeScript records and 1,248 JavaScript records;
+- 24 curriculum families;
+- TypeScript and JavaScript compilation both pass (`--strict` and
+  `--allowJs --checkJs` respectively);
+- each row retains the relevant official documentation URL in provenance.
+
+This is broad language coverage, not complete TypeScript coverage. It should
+be combined with repository-grounded repairs, version-specific compiler cases,
+tool trajectories, and held-out project fixtures before making a capability
+claim.
+
 ## Correct data contract
 
 Split TypeScript tasks into distinct output contracts:
