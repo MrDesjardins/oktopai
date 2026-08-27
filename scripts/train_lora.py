@@ -9,7 +9,7 @@ import argparse, json, os, sys
 ROOT = Path(__file__).resolve().parents[1]
 
 def main():
-    parser=argparse.ArgumentParser(); parser.add_argument("--data",type=Path,required=True); parser.add_argument("--base-model",required=True); parser.add_argument("--output",type=Path,required=True); parser.add_argument("--train",action="store_true"); parser.add_argument("--epochs",type=float,default=2.0); parser.add_argument("--max-steps",type=int,default=-1,help="Bound CPU experiments; -1 uses all epoch steps"); parser.add_argument("--loss-mode",choices=["completion-only","full"],default="completion-only"); parser.add_argument("--no-eval",action="store_true",help="Skip validation during bounded throughput experiments"); parser.add_argument("--resume",action="store_true",help="Resume the latest Trainer checkpoint in --output"); parser.add_argument("--device",choices=["auto","cpu","cuda"],default="auto",help="Select training device; auto uses CUDA only when visible"); args=parser.parse_args()
+    parser=argparse.ArgumentParser(); parser.add_argument("--data",type=Path,required=True); parser.add_argument("--base-model",required=True); parser.add_argument("--output",type=Path,required=True); parser.add_argument("--train",action="store_true"); parser.add_argument("--epochs",type=float,default=2.0); parser.add_argument("--max-steps",type=int,default=-1,help="Bound CPU experiments; -1 uses all epoch steps"); parser.add_argument("--loss-mode",choices=["completion-only","full"],default="completion-only"); parser.add_argument("--no-eval",action="store_true",help="Skip validation during bounded throughput experiments"); parser.add_argument("--resume",action="store_true",help="Resume the latest Trainer checkpoint in --output"); parser.add_argument("--device",choices=["auto","cpu","cuda"],default="auto",help="Select training device; auto uses CUDA only when visible"); parser.add_argument("--batch-size",type=int,default=1); parser.add_argument("--gradient-accumulation",type=int,default=8); parser.add_argument("--dataloader-workers",type=int,default=0); parser.add_argument("--no-gradient-checkpointing",action="store_true"); args=parser.parse_args()
     if not args.train:
         print(json.dumps({"dry_run":True,"base_model":args.base_model,"data":str(args.data),"output":str(args.output),"next":"re-run with --train after installing training requirements and verifying model/data licenses"},indent=2)); return 0
     try:
@@ -42,7 +42,8 @@ def main():
     if use_bf16:
         model_kwargs["torch_dtype"] = torch.bfloat16
     model=AutoModelForCausalLM.from_pretrained(args.base_model,**model_kwargs)
-    if use_bf16:
+    use_gradient_checkpointing = use_bf16 and not args.no_gradient_checkpointing
+    if use_gradient_checkpointing:
         model.gradient_checkpointing_enable()
         model.enable_input_require_grads()
     config=LoraConfig(r=16,lora_alpha=32,lora_dropout=0.05,target_modules=["q_proj","k_proj","v_proj","o_proj"],task_type="CAUSAL_LM")
@@ -70,6 +71,6 @@ def main():
         return batch
     tokenized=train_data.map(tokenize)
     tokenized_validation=validation_data.map(tokenize) if validation_data is not None and len(validation_data) else None
-    trainer=Trainer(model=model,args=TrainingArguments(output_dir=str(args.output),num_train_epochs=args.epochs,max_steps=args.max_steps,per_device_train_batch_size=1,gradient_accumulation_steps=8,logging_steps=10,save_strategy="steps",save_steps=100,save_total_limit=3,eval_strategy="epoch" if tokenized_validation is not None and not args.no_eval else "no",bf16=use_bf16,gradient_checkpointing=use_bf16,report_to=[]),train_dataset=tokenized,eval_dataset=None if args.no_eval else tokenized_validation,data_collator=collate)
+    trainer=Trainer(model=model,args=TrainingArguments(output_dir=str(args.output),num_train_epochs=args.epochs,max_steps=args.max_steps,per_device_train_batch_size=args.batch_size,gradient_accumulation_steps=args.gradient_accumulation,dataloader_num_workers=args.dataloader_workers,logging_steps=10,save_strategy="steps",save_steps=100,save_total_limit=3,eval_strategy="epoch" if tokenized_validation is not None and not args.no_eval else "no",bf16=use_bf16,gradient_checkpointing=use_gradient_checkpointing,report_to=[]),train_dataset=tokenized,eval_dataset=None if args.no_eval else tokenized_validation,data_collator=collate)
     trainer.train(resume_from_checkpoint=args.resume); model.save_pretrained(args.output); tokenizer.save_pretrained(args.output); print(f"Saved adapter to {args.output}; device={'cuda' if torch.cuda.is_available() else 'cpu'}"); return 0
 if __name__ == "__main__": raise SystemExit(main())
