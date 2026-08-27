@@ -53,11 +53,24 @@ def main() -> int:
         return {
             "id": task["id"],
             "domain": "typescript",
-            "family": task.get("task_family", "unknown"),
+            "family": task.get("task_family", task.get("family", "unknown")),
             "split": "train",
             "messages": [
                 {"role": "system", "content": "You are a precise TypeScript specialist. Return compiler-valid code."},
-                {"role": "user", "content": task["prompt"]},
+                {
+                    "role": "user",
+                    "content": task.get(
+                        "prompt",
+                        next(
+                            (
+                                message.get("content", "")
+                                for message in task.get("messages", [])
+                                if message.get("role") == "user"
+                            ),
+                            "",
+                        ),
+                    ),
+                },
             ],
             "completion": code,
             "source_code": task.get("source_code", ""),
