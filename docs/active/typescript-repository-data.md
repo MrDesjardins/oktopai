@@ -61,9 +61,33 @@ Train, validation, and test records must be split by repository fixture or
 task family, not by near-duplicate lines. The fixed held-out project suite is
 the release gate.
 
+## Qwen3-Coder 30B teacher to Qwen2.5-Coder 3B student result
+
+The full teacher corpus passed its gate: 2,450/2,450 answers compiled under
+strict TypeScript settings across six families. The student trained for
+12,000 CUDA steps using a LoRA adapter. The run completed and produced a
+28.2 MB adapter, but it failed the independent held-out evaluation and was
+not exported.
+
+On 200 unseen tasks, the original 3B base verified 94/200 answers with an
+average score of 0.740. The adapted model verified only 57/200 with an
+average score of 0.622. It was also slower in this Transformers evaluation:
+45.6 versus 27.4 tokens/second, with average generation time of 4.23 versus
+5.46 seconds. The low final training loss (`0.001215`) therefore did not
+represent useful generalization. The raw report is preserved at
+`.oktopai/evaluations/typescript-repository-qwen30b-v1-student-heldout-200.json`.
+
+The current interpretation is that the corpus and training recipe are not yet
+aligned with the held-out task format. Likely contributors include repeated
+exposure to a narrow synthetic answer style, insufficient task diversity, and
+training too many updates for 2,450 records. The adapter remains an artifact
+for analysis, not a usable TypeScript specialist.
+
 ## Current decision
 
-Do not retrain the 3B adapter from these 2,450 records yet. They are valuable
-source material, but they need teacher answers and executable verification.
-This prevents the next run from repeating the synthetic-data overfitting that
-produced very low validation loss but poor Ollama quality.
+Do not export or retrain from the current adapter. First verify and audit the
+12,993 external TypeScript candidates, deduplicate them against the teacher
+corpus, rebalance families, and create a held-out split matching the real task
+distribution. Then run a small recipe matrix with fewer steps, early stopping,
+and the new throughput controls before committing to a long run. This avoids
+another low-loss, poor-generalization result.
