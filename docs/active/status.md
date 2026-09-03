@@ -701,3 +701,17 @@ aligned; CPU tests remain 19/19.
   evaluation using recoverable task/check metadata, followed by a recipe
   matrix only if the candidate shows executable improvement. No promotion,
   export, upload, or paid remote generation is authorized.
+
+### Fixed 200-task result
+
+- The balanced probe was evaluated on the identical 200-task suite and seed
+  used by the prior teacher/student report, with cached base outputs.
+- It verified 31/200 tasks with mean score 0.4408. The prior student verified
+  57/200 with mean score 0.6217, while the unchanged base verified 94/200
+  with mean score 0.7400.
+- The probe averaged 1.66 seconds and 26.61 tokens/second, but the speed gain
+  does not offset the large quality regression. The probe is rejected for
+  promotion and further training from this mixture is stopped.
+- The next improvement must change the data contract or objective, not merely
+  add more external examples. The exact task metadata and normalized base
+  report are retained for future reproducible comparisons.

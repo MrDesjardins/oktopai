@@ -1,6 +1,6 @@
 # 12 — Teacher/student data readiness and probe
 
-Status: probe complete; full fixed-suite decision pending
+Status: probe complete; rejected by fixed 200-task gate
 
 ## Evidence
 
@@ -15,15 +15,15 @@ Status: probe complete; full fixed-suite decision pending
 
 ## Decision
 
-The probe is retained as directional evidence, not as a promoted student. Its
-two-task benchmark showed one partial score improvement and one tie, with no
-fully verified TypeScript task. The fixed 200-task comparison remains required
-before selecting a new recipe.
+The probe is rejected as a student candidate. On the identical fixed 200-task
+suite it verified 31/200 tasks with mean score 0.4408, below both the prior
+student (57/200, 0.6217) and the base (94/200, 0.7400). Its faster generation
+does not compensate for the quality regression.
 
 ## Next actions
 
-1. Recover or regenerate task/check metadata for the fixed 200-task suite.
-2. Evaluate base, prior student, and probe adapter on exactly the same tasks.
-3. Compare per-family executable correctness, output length, and latency.
-4. Run a small recipe matrix only if the probe improves executable quality.
-5. Keep all candidate adapters held until the promotion thresholds are met.
+1. Preserve the fixed-suite task/check metadata and normalized base report.
+2. Analyze failure families and objective mismatch before changing the corpus.
+3. Prefer task-contract or preference-objective experiments over naive corpus
+   expansion.
+4. Keep all candidate adapters held until the promotion thresholds are met.
