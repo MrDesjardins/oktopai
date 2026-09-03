@@ -678,3 +678,26 @@ aligned; CPU tests remain 19/19.
   registration.
 - Final regression checks passed: 28 unit tests (1 skipped), Python compile,
   heartbeat shell syntax, and `git diff --check`.
+
+## Teacher-plus-external balanced probe — 2026-09-02
+
+- Added deterministic `audit_external_training_readiness.py`. The gated
+  external corpus contains 1,908 unique records with zero ID or exact
+  prompt/completion overlap against the 2,450-record teacher corpus, but one
+  source contributes 71.17%, so the full set remains a review candidate.
+- Added `prepare_external_balanced_probe.py`, which selected 585 records with
+  a 120-record family cap. The resulting source share is 66.50%, all target
+  completions pass the unsafe-`any` check, and the identity/balance readiness
+  gates pass.
+- The teacher file contained 17 identical duplicate rows under repeated IDs.
+  `dedupe_jsonl_by_id.py` produced a non-destructive 2,433-record copy, and
+  the unique teacher-plus-balanced probe contains 3,018 records.
+- The isolated probe trained for 200 CUDA steps in 322.4 seconds. Final train
+  loss was 0.217 and validation loss was 0.6769. On the fixed benchmark's two
+  TypeScript tasks, it improved the generic task score from 0.4 to 0.6 and
+  tied the narrowing task at 1.0; neither task passed fully, so this is only
+  directional evidence and the adapter remains held.
+- The next justified teacher/student step is a proper fixed 200-task
+  evaluation using recoverable task/check metadata, followed by a recipe
+  matrix only if the candidate shows executable improvement. No promotion,
+  export, upload, or paid remote generation is authorized.
