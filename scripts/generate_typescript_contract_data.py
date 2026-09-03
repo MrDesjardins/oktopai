@@ -13,6 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "typescript-contract-v1"
+FAMILIES = ("generic", "narrowing", "union", "readonly", "predicate", "async", "api-contract", "test")
 
 
 def make(index: int, family_index: int) -> dict:
@@ -68,14 +69,20 @@ def main() -> int:
     parser.add_argument("--count", type=int, default=5000)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--families", help="comma-separated families to cycle, default: all")
     args = parser.parse_args()
     if args.count < 1:
         raise SystemExit("--count must be positive")
-    records = [make(index, index % 8) for index in range(args.count)]
+    wanted = [name.strip() for name in args.families.split(",")] if args.families else list(FAMILIES)
+    unknown = [name for name in wanted if name not in FAMILIES]
+    if not wanted or unknown:
+        raise SystemExit(f"--families must contain known names: {', '.join(FAMILIES)}")
+    family_indexes = [FAMILIES.index(name) for name in wanted]
+    records = [make(index, family_indexes[index % len(family_indexes)]) for index in range(args.count)]
     verification = verify(records) if args.verify else {"available": None, "verified": None}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in records) + "\n", encoding="utf-8")
-    print(json.dumps({"version": VERSION, "records": len(records), "output": str(args.output), "verification": verification, "splits": {split: sum(row["split"] == split for row in records) for split in ("train", "validation", "test")}}, indent=2))
+    print(json.dumps({"version": VERSION, "records": len(records), "output": str(args.output), "families": wanted, "verification": verification, "splits": {split: sum(row["split"] == split for row in records) for split in ("train", "validation", "test")}}, indent=2))
     return 0 if verification.get("verified", True) else 2
 
 

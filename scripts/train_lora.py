@@ -12,6 +12,10 @@ def main():
     parser=argparse.ArgumentParser(); parser.add_argument("--data",type=Path,required=True); parser.add_argument("--base-model",required=True); parser.add_argument("--output",type=Path,required=True); parser.add_argument("--train",action="store_true"); parser.add_argument("--epochs",type=float,default=2.0); parser.add_argument("--max-steps",type=int,default=-1,help="Bound CPU experiments; -1 uses all epoch steps"); parser.add_argument("--loss-mode",choices=["completion-only","full"],default="completion-only"); parser.add_argument("--no-eval",action="store_true",help="Skip validation during bounded throughput experiments"); parser.add_argument("--resume",action="store_true",help="Resume the latest Trainer checkpoint in --output"); parser.add_argument("--device",choices=["auto","cpu","cuda"],default="auto",help="Select training device; auto uses CUDA only when visible"); parser.add_argument("--batch-size",type=int,default=1); parser.add_argument("--gradient-accumulation",type=int,default=8); parser.add_argument("--dataloader-workers",type=int,default=0); parser.add_argument("--no-gradient-checkpointing",action="store_true"); args=parser.parse_args()
     if not args.train:
         print(json.dumps({"dry_run":True,"base_model":args.base_model,"data":str(args.data),"output":str(args.output),"next":"re-run with --train after installing training requirements and verifying model/data licenses"},indent=2)); return 0
+    cache = ROOT / ".oktopai" / "hf-cache"
+    cache.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("HF_DATASETS_CACHE", str(cache / "datasets"))
+    os.environ.setdefault("TRANSFORMERS_CACHE", str(cache / "transformers"))
     try:
         from datasets import load_dataset
         from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
@@ -19,10 +23,6 @@ def main():
         from peft import LoraConfig, get_peft_model
     except ImportError as exc:
         print(f"Training dependencies are unavailable: {exc}. Run scripts/install_training_stack.py --install", file=sys.stderr); return 2
-    cache = ROOT / ".oktopai" / "hf-cache"
-    cache.mkdir(parents=True, exist_ok=True)
-    os.environ.setdefault("HF_DATASETS_CACHE", str(cache / "datasets"))
-    os.environ.setdefault("TRANSFORMERS_CACHE", str(cache / "transformers"))
     if args.device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("--device cuda requested, but torch.cuda.is_available() is false")
     if args.device == "cpu":
