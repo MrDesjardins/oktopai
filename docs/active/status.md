@@ -715,3 +715,16 @@ aligned; CPU tests remain 19/19.
 - The next improvement must change the data contract or objective, not merely
   add more external examples. The exact task metadata and normalized base
   report are retained for future reproducible comparisons.
+
+### Probe failure concentration
+
+- Per-family comparison shows the probe retained 16/16 readonly-generic and
+  15/17 type-predicate tasks, but fell to 0 verified tasks in mapped-type,
+  null-narrowing, overload-signature, and record-dictionary families.
+- The dominant adapter failures were compile failures (130 records), missing
+  `T[K]` (28), forbidden `any` (28), missing `extends object` (23), and
+  missing `Record` (21). This is consistent with answer-style interference,
+  not a shortage of external volume.
+- Future work should use family-isolated ablations or a revised objective with
+  explicit negative/contrastive examples before considering another mixed
+  teacher-plus-external run.
